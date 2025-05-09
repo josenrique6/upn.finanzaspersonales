@@ -31,6 +31,11 @@ import com.example.upnfinanzaspersonales.data.local.entities.CategoriaEntity
 import com.example.upnfinanzaspersonales.data.local.entities.CuentaEntity
 import com.example.upnfinanzaspersonales.data.local.entities.TransaccionEntity
 
+/*
+* pantalla de la interfaz de usuario en Jetpack Compose que permite al
+* usuario registrar una nueva transacción financiera.
+* */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistroTransaccionScreen(
@@ -66,6 +71,10 @@ fun RegistroTransaccionScreen(
         )
     }
 
+    // Filtrar categorías según el tipo seleccionado
+    val categoriasFiltradas = remember(tipo) {
+        categorias.filter { it.tipo == tipo }
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Registrar Transacción") }) }
@@ -159,7 +168,7 @@ fun RegistroTransaccionScreen(
                 ExposedDropdownMenu(
                     expanded = expandedCategoria,
                     onDismissRequest = { expandedCategoria = false }) {
-                    categorias.forEach {
+                    categoriasFiltradas.forEach {
                         DropdownMenuItem(
                             text = { Text(it.nombre) },
                             onClick = {

@@ -30,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,21 +51,34 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.upnfinanzaspersonales.data.local.relations.TransaccionConDetalles
 import java.time.LocalDate
+import androidx.compose.material.icons.filled.PieChart
+import androidx.compose.material3.ButtonDefaults
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaTransaccionesScreen(
     transacciones: List<TransaccionConDetalles>,
-    onAgregarClick: () -> Unit
+    onAgregarClick: () -> Unit,
+    onVerEstadisticas: () -> Unit
 ) {
     Scaffold(
         containerColor = Color(0xFFFDF9FF),
         topBar = {
-            Text(
-                text = "Resumen de Finanzas",
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier
-                    .fillMaxWidth().padding(top = 20.dp),
-                textAlign = TextAlign.Center
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Transacciones",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier
+                            .fillMaxWidth().padding(top = 20.dp),
+                        textAlign = TextAlign.Center
+                    )
+                },
+                actions = {
+                    IconButton(onClick = { onVerEstadisticas() }) {
+                        Icon(Icons.Filled.PieChart, contentDescription = "Ver estadísticas")
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -190,6 +204,10 @@ fun FiltroPorFecha(
     }
 
     Button(
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor   = MaterialTheme.colorScheme.onPrimary
+        ),
         onClick = { datePickerDialog.show() },
         modifier = Modifier
             .fillMaxWidth()

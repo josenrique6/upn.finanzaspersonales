@@ -65,6 +65,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation ("io.github.ehsannarmani:compose-charts:0.1.7")
 
     // Room
     implementation(libs.room.runtime)

@@ -6,6 +6,7 @@ import com.example.upnfinanzaspersonales.data.local.entities.TransaccionEntity
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+//actúa como intermediaria entre la capa de datos (DAO) y la interfaz de usuario (UI)
 class TransaccionViewModel(
     private val cuentaDao: CuentaDao,
     private val categoriaDao: CategoriaDao,
@@ -17,7 +18,7 @@ class TransaccionViewModel(
     val cuentas = cuentaDao.obtenerCuentas()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val categorias = categoriaDao.obtenerCategoriasPorTipo("Gasto")
+    val categorias = categoriaDao.obtenerCategoriasPorTipo()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // ✅ Transacciones con detalles enriquecidos

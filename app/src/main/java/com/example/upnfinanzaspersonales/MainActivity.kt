@@ -1,5 +1,6 @@
 package com.example.upnfinanzaspersonales
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +21,6 @@ import androidx.room.Room
 import com.example.upnfinanzaspersonales.data.local.database.AppDatabase
 import com.example.upnfinanzaspersonales.data.local.database.DatabaseInitializer
 import com.example.upnfinanzaspersonales.ui.theme.UpnfinanzaspersonalesTheme
-import com.example.upnfinanzaspersonales.presentation.navigation.Rutas
 import com.example.upnfinanzaspersonales.presentation.ui.screens.*
 import com.example.upnfinanzaspersonales.domain.model.Transaccion
 import com.example.upnfinanzaspersonales.presentation.ui.viewmodel.TransaccionViewModel
@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -48,7 +49,17 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
-            AppFinanzasNavHost(db)
+            UpnfinanzaspersonalesTheme {
+                // A surface container using the 'background' color from the theme
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    content = { padding ->
+                        // Contenido de la aplicación
+                        AppFinanzasNavHost(db)
+                    }
+                )
+            }
+
         }
     }
 }
@@ -74,6 +85,9 @@ fun AppFinanzasNavHost(db: AppDatabase) {
                 transacciones = transacciones,
                 onAgregarClick = {
                     navController.navigate("registro")
+                },
+                onVerEstadisticas = {
+                    navController.navigate("estadisticas")
                 }
             )
         }
@@ -89,6 +103,15 @@ fun AppFinanzasNavHost(db: AppDatabase) {
                     viewModel.registrar(nuevaTransaccion)
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable("estadisticas") {
+            val transacciones by viewModel.transacciones.collectAsState()
+
+            EstadisticasScreen(
+                transacciones = transacciones,
+                initialFecha = LocalDate.now()
             )
         }
     }

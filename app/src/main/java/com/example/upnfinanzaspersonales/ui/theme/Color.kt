@@ -1,11 +1,22 @@
+// Colors.kt
 package com.example.upnfinanzaspersonales.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Palette
+val Primary       = Color(0xFFFB8C00) // azul medio
+val PrimaryDark   = Color(0xFF4CAF50) // azul oscuro
+val Accent        = Color(0xFF43A047) // verde vivo
+val Info          = Color(0xFF039BE5) // azul claro informativo
+val Success       = Color(0xFF4CAF50) // ganancias
+val Warning       = Color(0xFFFB8C00) // advertencia
+val ErrorColor    = Color(0xFFE53935) // pérdidas / error
+val Profit        = Color(0xFF2E7D32) // verde oscuro ganancias
+val Loss          = Color(0xFFC62828) // rojo intenso pérdidas
+val Neutral       = Color(0xFF9E9E9E) // gris neutro
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Fondos y textos
+val Background    = Color(0xFFF5F5F5) // gris muy claro
+val Surface       = Color(0xFFFFFFFF) // blanco puro
+val TextPrimary   = Color(0xFF212121) // casi negro
+val TextSecondary = Color(0xFF757575) // gris medio

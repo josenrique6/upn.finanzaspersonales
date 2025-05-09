@@ -6,7 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-
+//se utiliza para inicializar la base de datos con datos por defecto en caso de que las tablas estén vacías.
 object DatabaseInitializer {
     fun insertarDatosPorDefecto(
         cuentaDao: CuentaDao,
@@ -36,7 +36,7 @@ object DatabaseInitializer {
             }
 
             // Verificar categorías
-            val categoriasExistentes = categoriaDao.obtenerCategoriasPorTipo("Gasto").firstOrNull()
+            val categoriasExistentes = categoriaDao.obtenerCategoriasPorTipo().firstOrNull()
             if (categoriasExistentes.isNullOrEmpty()) {
                 val categorias = listOf(
                     CategoriaEntity(nombre = "Sueldo", tipo = "Ingreso"),
