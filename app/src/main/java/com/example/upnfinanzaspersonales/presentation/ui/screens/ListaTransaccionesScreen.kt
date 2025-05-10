@@ -216,3 +216,4 @@ fun FiltroPorFecha(
         Text("Filtrar por: $fechaSeleccionada")
     }
 }
+

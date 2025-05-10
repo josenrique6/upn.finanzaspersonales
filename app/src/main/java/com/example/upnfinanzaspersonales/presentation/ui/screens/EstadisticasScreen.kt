@@ -42,6 +42,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.upnfinanzaspersonales.data.local.entities.CategoriaEntity
+import com.example.upnfinanzaspersonales.data.local.entities.CuentaEntity
+import com.example.upnfinanzaspersonales.data.local.entities.TransaccionEntity
+import com.example.upnfinanzaspersonales.data.local.entities.UsuarioEntity
 import ir.ehsannarmani.compose_charts.PieChart
 import ir.ehsannarmani.compose_charts.models.Pie
 import java.time.format.DateTimeFormatter
@@ -237,4 +242,68 @@ fun EstadisticasScreen(
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewEstadisticasScreen() {
+    EstadisticasScreen(
+        transacciones = listOf(
+            TransaccionConDetalles(
+                transaccion = TransaccionEntity(
+                    id_transaccion = 1,
+                    id_usuario = 1,
+                    id_categoria = 1,
+                    id_cuenta = 1,
+                    monto = 150.0,
+                    fecha = LocalDate.now(),
+                    descripcion = "Pago de servicios",
+                    tipo = "Gasto"
+                ),
+                categoria = CategoriaEntity(
+                    id_categoria = 1,
+                    nombre = "Servicios",
+                    tipo = "Gasto"
+                ),
+                cuenta = CuentaEntity(
+                    id_cuenta = 1,
+                    nombre = "Cuenta Principal"
+                ),
+                usuario = UsuarioEntity(
+                    email = "",
+                    fecha_registro = LocalDate.now(),
+                    id_usuario = 1,
+                    nombre = "Usuario demo"
+                )
+            ),
+            TransaccionConDetalles(
+                transaccion = TransaccionEntity(
+                    id_transaccion = 2,
+                    id_usuario = 1,
+                    id_categoria = 2,
+                    id_cuenta = 1,
+                    monto = 2000.0,
+                    fecha = LocalDate.now(),
+                    descripcion = "Salario",
+                    tipo = "Ingreso"
+                ),
+                categoria = CategoriaEntity(
+                    id_categoria = 2,
+                    nombre = "Sueldo",
+                    tipo = "Ingreso"
+                ),
+                cuenta = CuentaEntity(
+                    id_cuenta = 1,
+                    nombre = "Cuenta Principal"
+                ),
+                usuario = UsuarioEntity(
+                    email = "",
+                    fecha_registro = LocalDate.now(),
+                    id_usuario = 1,
+                    nombre = "Usuario demo"
+                )
+            )
+        ),
+        initialFecha = LocalDate.now()
+    )
 }
