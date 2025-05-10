@@ -2,6 +2,7 @@ package com.example.upnfinanzaspersonales
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -77,8 +78,16 @@ fun AppFinanzasNavHost(db: AppDatabase) {
 
     NavHost(
         navController = navController,
-        startDestination = "lista"
+        startDestination = "login"
     ) {
+        composable("login") {
+
+            LoginScreen(onLoginSuccess = {
+                navController.navigate("lista")
+            }
+
+            )
+        }
         composable("lista") {
             val transacciones by viewModel.transacciones.collectAsState()
             ListaTransaccionesScreen(
