@@ -26,7 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.CalendarToday // Icono para el selector de fecha
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,7 +35,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,11 +49,12 @@ import com.example.upnfinanzaspersonales.data.local.entities.CategoriaEntity
 import com.example.upnfinanzaspersonales.data.local.entities.CuentaEntity
 import com.example.upnfinanzaspersonales.data.local.entities.TransaccionEntity
 import com.example.upnfinanzaspersonales.data.local.entities.UsuarioEntity
+// Importa el tema de tu aplicación si es necesario para la Preview
+// import com.example.upnfinanzaspersonales.ui.theme.UPNFinanzasPersonalesTheme
 import ir.ehsannarmani.compose_charts.PieChart
 import ir.ehsannarmani.compose_charts.models.Pie
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -69,23 +69,14 @@ fun EstadisticasScreen(
     transacciones: List<TransaccionConDetalles>,
     initialFecha: LocalDate
 ) {
-    // Estado para la fecha de referencia seleccionada
     var fechaReferencia by remember { mutableStateOf(initialFecha) }
-
-    // Estado para el tipo de filtro temporal (Día, Semana, Mes)
     var filtroTemporalidadSeleccionado by remember { mutableStateOf(FiltroTemporalidad.DIA) }
-
-    // Estado para el tipo de transacción (Ingreso/Gasto)
-    var tipoTransaccionSeleccionado by remember { mutableStateOf("Gasto") }
-
-    // Contexto para el DatePickerDialog
+    var tipoTransaccionSeleccionado by remember { mutableStateOf("Gasto") } // "Gasto" o "Ingreso"
     val context = LocalContext.current
 
-    // Formateadores de fecha
     val formatoDia = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale("es", "ES"))
     val formatoMesAno = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("es", "ES"))
 
-    // Calcula el rango de fechas actual basado en el filtro y la fecha de referencia
     val (fechaInicioPeriodo, fechaFinPeriodo) = remember(fechaReferencia, filtroTemporalidadSeleccionado) {
         when (filtroTemporalidadSeleccionado) {
             FiltroTemporalidad.DIA -> fechaReferencia to fechaReferencia
@@ -102,13 +93,11 @@ fun EstadisticasScreen(
         }
     }
 
-    // Diálogo de selección de fecha
     val datePickerDialog = remember(fechaReferencia.year, fechaReferencia.monthValue, fechaReferencia.dayOfMonth) {
         DatePickerDialog(
             context,
             { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
                 fechaReferencia = LocalDate.of(year, month + 1, dayOfMonth)
-                // Al seleccionar una nueva fecha, volvemos al filtro DIA por claridad
                 filtroTemporalidadSeleccionado = FiltroTemporalidad.DIA
             },
             fechaReferencia.year,
@@ -117,29 +106,26 @@ fun EstadisticasScreen(
         )
     }
 
-    // Filtrar transacciones según el período y tipo
     val transaccionesEnPeriodo = transacciones.filter {
         !it.transaccion.fecha.isBefore(fechaInicioPeriodo) && !it.transaccion.fecha.isAfter(fechaFinPeriodo)
     }
 
-    // Cálculo de totales
     val totalIngreso = transaccionesEnPeriodo
         .filter { it.transaccion.tipo == "Ingreso" }
         .sumOf { it.transaccion.monto }
     val totalGasto = transaccionesEnPeriodo
         .filter { it.transaccion.tipo == "Gasto" }
         .sumOf { it.transaccion.monto }
+    val balancePeriodo = totalIngreso - totalGasto
 
-    // Resumen por categoría
     val transaccionesFiltradasPorTipoYPeriodo = transaccionesEnPeriodo.filter {
         it.transaccion.tipo == tipoTransaccionSeleccionado
     }
     val resumen = transaccionesFiltradasPorTipoYPeriodo
         .groupBy { it.categoria.nombre }
         .mapValues { it.value.sumOf { t -> t.transaccion.monto } }
-    val totalCategorias = resumen.values.sum().takeIf { it > 0 } ?: 1.0 // Evitar división por cero
+    val totalCategoriasEnResumen = resumen.values.sum().takeIf { it > 0 } ?: 1.0
 
-    // Mapa de colores y emojis (puedes expandirlo)
     val colores = mapOf(
         "Sueldo" to Color(0xFF81C784), "Ropa" to Color(0xFFEF5350),
         "Entretenimiento" to Color(0xFFFF8A65), "Comida" to Color(0xFFFFEB3B),
@@ -156,18 +142,15 @@ fun EstadisticasScreen(
         "Otros Ingresos" to "📈", "Otros Gastos" to "💸"
     ).withDefault { "❔" }
 
-
-    // Datos para el PieChart
     val pieData = resumen.entries.map { (cat, monto) ->
         Pie(
-            label = cat,
+            label = cat, // La etiqueta se usa en la leyenda, no dentro del pie en esta configuración
             data = monto,
             color = colores.getValue(cat),
             selectedColor = colores.getValue(cat).copy(alpha = 0.8f)
         )
     }
 
-    // Función para cambiar la fecha de referencia
     fun cambiarFecha(incremento: Long) {
         fechaReferencia = when (filtroTemporalidadSeleccionado) {
             FiltroTemporalidad.DIA -> fechaReferencia.plusDays(incremento)
@@ -176,12 +159,9 @@ fun EstadisticasScreen(
         }
     }
 
-    // Texto a mostrar para el rango de fechas
     val textoRangoFechas = when (filtroTemporalidadSeleccionado) {
         FiltroTemporalidad.DIA -> fechaReferencia.format(formatoDia)
-        FiltroTemporalidad.SEMANA -> {
-            "Semana: ${fechaInicioPeriodo.format(formatoDia)} - ${fechaFinPeriodo.format(formatoDia)}"
-        }
+        FiltroTemporalidad.SEMANA -> "${fechaInicioPeriodo.format(formatoDia)} - ${fechaFinPeriodo.format(formatoDia)}"
         FiltroTemporalidad.MES -> fechaReferencia.format(formatoMesAno).replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     }
 
@@ -190,26 +170,21 @@ fun EstadisticasScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Text(
-            text = "Estadística",
+            text = "Estadísticas",
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier
-                .fillMaxWidth().padding(top = 14.dp),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp), // Reducido padding superior, añadido inferior
             textAlign = TextAlign.Center
         )
-        Row(
 
-        ){Text(
-            text = "Balance: S/3,000.00",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier
-                .fillMaxWidth().padding(top = 14.dp),
+        Text(
+            text = "Balance del Período: S/ %.2f".format(balancePeriodo),
+            style = MaterialTheme.typography.titleLarge, // Estilo ajustado
+            color = if (balancePeriodo >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), // Aumentado padding inferior
             textAlign = TextAlign.Center
-        )}
+        )
 
-        Spacer(modifier = Modifier.height(6.dp))
-        // --- Selector de Filtro Temporal (Día, Semana, Mes) ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -229,9 +204,8 @@ fun EstadisticasScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // --- Selector de fecha (flechas y texto) ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -242,7 +216,7 @@ fun EstadisticasScreen(
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { datePickerDialog.show() }
+                modifier = Modifier.clickable { datePickerDialog.show() }.padding(horizontal = 4.dp) // Padding para mejorar área de click
             ) {
                 Text(
                     text = textoRangoFechas,
@@ -263,118 +237,132 @@ fun EstadisticasScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- TabRow con totales (Ingreso/Gasto) ---
         TabRow(
             selectedTabIndex = if (tipoTransaccionSeleccionado == "Ingreso") 0 else 1,
             modifier = Modifier.fillMaxWidth(),
-            // containerColor = MaterialTheme.colorScheme.surfaceVariant, // Color de fondo del TabRow
-            // contentColor = MaterialTheme.colorScheme.onSurfaceVariant, // Color del texto en TabRow
             indicator = { tabPositions ->
                 TabRowDefaults.Indicator(
                     Modifier.tabIndicatorOffset(tabPositions[if (tipoTransaccionSeleccionado == "Ingreso") 0 else 1]),
                     height = 3.dp,
-                    color = MaterialTheme.colorScheme.primary // Color del indicador
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         ) {
             Tab(
                 selected = tipoTransaccionSeleccionado == "Ingreso",
                 onClick = { tipoTransaccionSeleccionado = "Ingreso" },
-                text = { Text("Ingreso S/. %.2f".format(totalIngreso), fontWeight = if(tipoTransaccionSeleccionado == "Ingreso") FontWeight.Bold else FontWeight.Normal) },
+                text = { Text("Ingresos S/. %.2f".format(totalIngreso), fontWeight = if(tipoTransaccionSeleccionado == "Ingreso") FontWeight.Bold else FontWeight.Normal) },
                 selectedContentColor = MaterialTheme.colorScheme.primary,
                 unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Tab(
                 selected = tipoTransaccionSeleccionado == "Gasto",
                 onClick = { tipoTransaccionSeleccionado = "Gasto" },
-                text = { Text("Gasto S/. %.2f".format(totalGasto), fontWeight = if(tipoTransaccionSeleccionado == "Gasto") FontWeight.Bold else FontWeight.Normal) },
+                text = { Text("Gastos S/. %.2f".format(totalGasto), fontWeight = if(tipoTransaccionSeleccionado == "Gasto") FontWeight.Bold else FontWeight.Normal) },
                 selectedContentColor = MaterialTheme.colorScheme.primary,
                 unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp)) // Aumentado espacio antes del gráfico
 
-        // --- PieChart ---
+        // --- PieChart
         if (pieData.isNotEmpty()) {
-            PieChart(
+            Box( // Contenedor para el PieChart y el texto central
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp), // Ajusta la altura si es necesario
-                data = pieData,
-                onPieClick = { /* opcional: destacar sector */ },
-                selectedScale = 1.05f, // Reducido un poco para mejor estética
-                style = Pie.Style.Fill,
-                //labelPercentage = 0.15f, // Ajusta para que el texto quepa mejor
-                //labelColor = Color.Black, // Color del texto dentro del pie
-                //labelStyle = MaterialTheme.typography.labelSmall // Estilo del texto
-            )
+                    .height(280.dp), // Altura para el donut y el texto
+                contentAlignment = Alignment.Center
+            ) {
+                PieChart(
+                    modifier = Modifier.fillMaxSize(), // El PieChart ocupa todo el Box
+                    data = pieData,
+                    onPieClick = { /* TODO: Podrías implementar algo aquí, como mostrar detalles de la categoría clickeada */ },
+                    selectedScale = 1.05f, // Escala de la sección al ser seleccionada (si onPieClick se usa para seleccionar)
+                )
+                // Texto en el centro del Donut Chart
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = if (tipoTransaccionSeleccionado == "Ingreso") "Total Ingresos" else "Total Gastos",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant // Color sutil para la etiqueta
+                    )
+                    Text(
+                        text = "S/ %.2f".format(if (tipoTransaccionSeleccionado == "Ingreso") totalIngreso else totalGasto),
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface // Color principal para el monto
+                    )
+                }
+            }
         } else {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp),
+                    .height(280.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No hay datos para mostrar en este período.")
+                Text("No hay ${tipoTransaccionSeleccionado.lowercase()}s para mostrar en este período.")
             }
         }
 
+        Spacer(modifier = Modifier.height(20.dp)) // Aumentado espacio después del gráfico
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // --- Lista de categorías ---
         if (resumen.isNotEmpty()) {
             Column {
-                resumen.entries.sortedByDescending { it.value }.forEach { (categoria, monto) -> // Ordenar por monto
-                    val porcentaje = (monto * 100 / totalCategorias).roundToInt()
+                Text(
+                    text = "Detalle de ${tipoTransaccionSeleccionado.lowercase()}s por categoría:",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                resumen.entries.sortedByDescending { it.value }.forEach { (categoria, monto) ->
+                    val porcentaje = (monto * 100 / totalCategoriasEnResumen).roundToInt()
                     val colorCat = colores.getValue(categoria)
                     val emoji = emojiMap.getValue(categoria)
 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp), // Aumentado padding vertical
+                            .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box( // Indicador de color
+                        Box(
                             modifier = Modifier
                                 .size(12.dp)
                                 .background(colorCat, shape = RoundedCornerShape(3.dp))
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(10.dp)) // Aumentado espacio
                         Text(
                             text = "$emoji $categoria",
-                            style = MaterialTheme.typography.bodyLarge, // Un poco más grande
-                            modifier = Modifier.weight(1.5f) // Dar más peso al nombre
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1.5f)
                         )
                         Text(
                             text = "$porcentaje%",
                             style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
-                            modifier = Modifier.weight(0.5f), // Menos peso al porcentaje
-                            textAlign = androidx.compose.ui.text.style.TextAlign.End
+                            modifier = Modifier.weight(0.6f), // Ajustado peso
+                            textAlign = TextAlign.End
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(10.dp)) // Aumentado espacio
                         Text(
                             text = "S/ %.2f".format(monto),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), // Destacar monto
-                            modifier = Modifier.weight(1f), // Peso para el monto
-                            textAlign = androidx.compose.ui.text.style.TextAlign.End
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End
                         )
                     }
                 }
             }
-        } else if (pieData.isEmpty() && transaccionesEnPeriodo.isNotEmpty()) { // Si hay transacciones pero no del tipo seleccionado
-            Box(
+        } else if (pieData.isEmpty() && transaccionesEnPeriodo.isNotEmpty()) {
+            Box( // Este caso es cuando hay transacciones en el período, pero no del tipo seleccionado (Ingreso/Gasto)
                 modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No hay ${tipoTransaccionSeleccionado.lowercase()}s en este período.")
+                // El mensaje "No hay ${tipoTransaccionSeleccionado.lowercase()}s para mostrar..." ya cubre esto arriba
             }
         }
     }
-
 }
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewEstadisticasScreen() {
