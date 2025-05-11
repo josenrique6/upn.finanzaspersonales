@@ -66,17 +66,22 @@ enum class FiltroTemporalidad {
 
 @Composable
 fun EstadisticasScreen(
-    transacciones: List<TransaccionConDetalles>,
-    initialFecha: LocalDate
+    transacciones: List<TransaccionConDetalles>, // Lista de transacciones con detalles relacionados
+    initialFecha: LocalDate // Fecha inicial para el filtro de estadísticas
 ) {
+    // Estado para la fecha de referencia seleccionada
     var fechaReferencia by remember { mutableStateOf(initialFecha) }
+    // Estado para el filtro de temporalidad (día, semana, mes)
     var filtroTemporalidadSeleccionado by remember { mutableStateOf(FiltroTemporalidad.DIA) }
-    var tipoTransaccionSeleccionado by remember { mutableStateOf("Gasto") } // "Gasto" o "Ingreso"
+    // Estado para el tipo de transacción seleccionado ("Gasto" o "Ingreso")
+    var tipoTransaccionSeleccionado by remember { mutableStateOf("Gasto") }
     val context = LocalContext.current
 
+    // Formatos de fecha para mostrar en la UI
     val formatoDia = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale("es", "ES"))
     val formatoMesAno = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("es", "ES"))
 
+    // Cálculo del rango de fechas según el filtro de temporalidad seleccionado
     val (fechaInicioPeriodo, fechaFinPeriodo) = remember(fechaReferencia, filtroTemporalidadSeleccionado) {
         when (filtroTemporalidadSeleccionado) {
             FiltroTemporalidad.DIA -> fechaReferencia to fechaReferencia
@@ -93,12 +98,13 @@ fun EstadisticasScreen(
         }
     }
 
+    // Diálogo para seleccionar una fecha
     val datePickerDialog = remember(fechaReferencia.year, fechaReferencia.monthValue, fechaReferencia.dayOfMonth) {
         DatePickerDialog(
             context,
             { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
                 fechaReferencia = LocalDate.of(year, month + 1, dayOfMonth)
-                filtroTemporalidadSeleccionado = FiltroTemporalidad.DIA
+                filtroTemporalidadSeleccionado = FiltroTemporalidad.DIA // Cambia el filtro a día al seleccionar una fecha
             },
             fechaReferencia.year,
             fechaReferencia.monthValue - 1,
@@ -106,10 +112,12 @@ fun EstadisticasScreen(
         )
     }
 
+    // Filtra las transacciones que están dentro del rango de fechas seleccionado
     val transaccionesEnPeriodo = transacciones.filter {
         !it.transaccion.fecha.isBefore(fechaInicioPeriodo) && !it.transaccion.fecha.isAfter(fechaFinPeriodo)
     }
 
+    // Calcula el total de ingresos, gastos y el balance del período
     val totalIngreso = transaccionesEnPeriodo
         .filter { it.transaccion.tipo == "Ingreso" }
         .sumOf { it.transaccion.monto }
@@ -118,6 +126,7 @@ fun EstadisticasScreen(
         .sumOf { it.transaccion.monto }
     val balancePeriodo = totalIngreso - totalGasto
 
+    // Filtra las transacciones por tipo (Ingreso o Gasto) y calcula el resumen por categoría
     val transaccionesFiltradasPorTipoYPeriodo = transaccionesEnPeriodo.filter {
         it.transaccion.tipo == tipoTransaccionSeleccionado
     }
@@ -126,6 +135,7 @@ fun EstadisticasScreen(
         .mapValues { it.value.sumOf { t -> t.transaccion.monto } }
     val totalCategoriasEnResumen = resumen.values.sum().takeIf { it > 0 } ?: 1.0
 
+    // Colores y emojis para las categorías
     val colores = mapOf(
         "Sueldo" to Color(0xFF81C784), "Ropa" to Color(0xFFEF5350),
         "Entretenimiento" to Color(0xFFFF8A65), "Comida" to Color(0xFFFFEB3B),
@@ -142,6 +152,7 @@ fun EstadisticasScreen(
         "Otros Ingresos" to "📈", "Otros Gastos" to "💸"
     ).withDefault { "❔" }
 
+    // Datos para el gráfico de pastel
     val pieData = resumen.entries.map { (cat, monto) ->
         Pie(
             label = cat, // La etiqueta se usa en la leyenda, no dentro del pie en esta configuración
@@ -151,6 +162,7 @@ fun EstadisticasScreen(
         )
     }
 
+    // Función para cambiar la fecha según el filtro de temporalidad
     fun cambiarFecha(incremento: Long) {
         fechaReferencia = when (filtroTemporalidadSeleccionado) {
             FiltroTemporalidad.DIA -> fechaReferencia.plusDays(incremento)
@@ -159,17 +171,20 @@ fun EstadisticasScreen(
         }
     }
 
+    // Texto que muestra el rango de fechas seleccionado
     val textoRangoFechas = when (filtroTemporalidadSeleccionado) {
         FiltroTemporalidad.DIA -> fechaReferencia.format(formatoDia)
         FiltroTemporalidad.SEMANA -> "${fechaInicioPeriodo.format(formatoDia)} - ${fechaFinPeriodo.format(formatoDia)}"
         FiltroTemporalidad.MES -> fechaReferencia.format(formatoMesAno).replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     }
 
+    // Contenido de la pantalla
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // Título de la pantalla
         Text(
             text = "Estadísticas",
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -177,6 +192,7 @@ fun EstadisticasScreen(
             textAlign = TextAlign.Center
         )
 
+        // Balance del período
         Text(
             text = "Balance del Período: S/ %.2f".format(balancePeriodo),
             style = MaterialTheme.typography.titleLarge, // Estilo ajustado
@@ -185,6 +201,7 @@ fun EstadisticasScreen(
             textAlign = TextAlign.Center
         )
 
+        // Filtros de temporalidad
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -206,6 +223,7 @@ fun EstadisticasScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Navegación entre períodos
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -237,6 +255,7 @@ fun EstadisticasScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Tabs para seleccionar tipo de transacción
         TabRow(
             selectedTabIndex = if (tipoTransaccionSeleccionado == "Ingreso") 0 else 1,
             modifier = Modifier.fillMaxWidth(),
@@ -266,7 +285,7 @@ fun EstadisticasScreen(
 
         Spacer(modifier = Modifier.height(20.dp)) // Aumentado espacio antes del gráfico
 
-        // --- PieChart
+        // Gráfico de pastel
         if (pieData.isNotEmpty()) {
             Box( // Contenedor para el PieChart y el texto central
                 modifier = Modifier
@@ -307,6 +326,7 @@ fun EstadisticasScreen(
 
         Spacer(modifier = Modifier.height(20.dp)) // Aumentado espacio después del gráfico
 
+        // Detalle de transacciones por categoría
         if (resumen.isNotEmpty()) {
             Column {
                 Text(

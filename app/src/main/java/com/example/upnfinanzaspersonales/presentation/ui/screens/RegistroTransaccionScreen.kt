@@ -39,62 +39,65 @@ import com.example.upnfinanzaspersonales.data.local.entities.TransaccionEntity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistroTransaccionScreen(
-    cuentas: List<CuentaEntity>,
-    categorias: List<CategoriaEntity>,
-    onGuardarClick: (TransaccionEntity) -> Unit,
-    idUsuario: Int = 1 // Asumiendo usuario por defecto por ahora
+    cuentas: List<CuentaEntity>, // Lista de cuentas disponibles para seleccionar
+    categorias: List<CategoriaEntity>, // Lista de categorías disponibles para seleccionar
+    onGuardarClick: (TransaccionEntity) -> Unit, // Callback para guardar la transacción
+    idUsuario: Int = 1 // ID del usuario por defecto
 ) {
-    var tipo by remember { mutableStateOf("Gasto") }
-    var monto by remember { mutableStateOf("") }
-    var descripcion by remember { mutableStateOf("") }
-    var fecha by remember { mutableStateOf(LocalDate.now()) }
+    // Estados para los campos del formulario
+    var tipo by remember { mutableStateOf("Gasto") } // Tipo de transacción (Gasto o Ingreso)
+    var monto by remember { mutableStateOf("") } // Monto de la transacción
+    var descripcion by remember { mutableStateOf("") } // Descripción de la transacción
+    var fecha by remember { mutableStateOf(LocalDate.now()) } // Fecha de la transacción
 
-    var cuentaSeleccionada by remember { mutableStateOf<CuentaEntity?>(null) }
-    var categoriaSeleccionada by remember { mutableStateOf<CategoriaEntity?>(null) }
+    var cuentaSeleccionada by remember { mutableStateOf<CuentaEntity?>(null) } // Cuenta seleccionada
+    var categoriaSeleccionada by remember { mutableStateOf<CategoriaEntity?>(null) } // Categoría seleccionada
 
-    var expandedCuenta by remember { mutableStateOf(false) }
-    var expandedCategoria by remember { mutableStateOf(false) }
+    var expandedCuenta by remember { mutableStateOf(false) } // Estado del menú desplegable de cuentas
+    var expandedCategoria by remember { mutableStateOf(false) } // Estado del menú desplegable de categorías
 
-    val tipos = listOf("Gasto", "Ingreso")
+    val tipos = listOf("Gasto", "Ingreso") // Tipos de transacción disponibles
 
-    val context = LocalContext.current
+    val context = LocalContext.current // Contexto para mostrar el selector de fecha
 
+    // Diálogo para seleccionar la fecha
     val datePickerDialog = remember {
         android.app.DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
-                fecha = LocalDate.of(year, month + 1, dayOfMonth)
+                fecha = LocalDate.of(year, month + 1, dayOfMonth) // Actualiza la fecha seleccionada
             },
             fecha.year,
-            fecha.monthValue - 1,
+            fecha.monthValue - 1, // El mes es 0-indexado
             fecha.dayOfMonth
         )
     }
 
-    // Filtrar categorías según el tipo seleccionado
+    // Filtra las categorías según el tipo seleccionado
     val categoriasFiltradas = remember(tipo) {
         categorias.filter { it.tipo == tipo }
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Registrar Transacción") }) }
+        topBar = { TopAppBar(title = { Text("Registrar Transacción") }) } // Barra superior con el título
     ) { padding ->
         Column(
             Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
+                .padding(padding) // Respeta el padding del Scaffold
+                .padding(16.dp) // Margen interno
+                .verticalScroll(rememberScrollState()) // Habilita el scroll vertical
         ) {
             // Selector de Fecha
             Button(
-                onClick = { datePickerDialog.show() },
+                onClick = { datePickerDialog.show() }, // Muestra el selector de fecha
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Fecha: $fecha")
+                Text("Fecha: $fecha") // Muestra la fecha seleccionada
             }
 
             Spacer(Modifier.height(16.dp))
-            // Tipo
+
+            // Selector de Tipo de Transacción
             Text("Tipo:")
             Row {
                 tipos.forEach { item ->
@@ -102,38 +105,38 @@ fun RegistroTransaccionScreen(
                         Modifier
                             .padding(end = 8.dp)
                             .clickable {
-                                tipo = item
+                                tipo = item // Cambia el tipo seleccionado
                             },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(selected = tipo == item, onClick = { tipo = item })
-                        Text(item)
+                        RadioButton(selected = tipo == item, onClick = { tipo = item }) // Botón de selección
+                        Text(item) // Texto del tipo
                     }
                 }
             }
 
             Spacer(Modifier.height(8.dp))
 
-            // Monto
+            // Campo para ingresar el monto
             OutlinedTextField(
                 value = monto,
-                onValueChange = { monto = it },
+                onValueChange = { monto = it }, // Actualiza el monto ingresado
                 label = { Text("Monto") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number) // Solo permite números
             )
 
             Spacer(Modifier.height(8.dp))
 
-            // Cuenta Dropdown
+            // Menú desplegable para seleccionar la cuenta
             ExposedDropdownMenuBox(
                 expanded = expandedCuenta,
                 onExpandedChange = { expandedCuenta = !expandedCuenta }) {
                 OutlinedTextField(
-                    value = cuentaSeleccionada?.nombre ?: "",
+                    value = cuentaSeleccionada?.nombre ?: "", // Muestra el nombre de la cuenta seleccionada
                     onValueChange = {},
-                    readOnly = true,
+                    readOnly = true, // Campo de solo lectura
                     label = { Text("Cuenta") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCuenta) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCuenta) }, // Icono del menú desplegable
                     modifier = Modifier.menuAnchor()
                 )
                 ExposedDropdownMenu(
@@ -141,10 +144,10 @@ fun RegistroTransaccionScreen(
                     onDismissRequest = { expandedCuenta = false }) {
                     cuentas.forEach {
                         DropdownMenuItem(
-                            text = { Text(it.nombre) },
+                            text = { Text(it.nombre) }, // Muestra el nombre de cada cuenta
                             onClick = {
-                                cuentaSeleccionada = it
-                                expandedCuenta = false
+                                cuentaSeleccionada = it // Actualiza la cuenta seleccionada
+                                expandedCuenta = false // Cierra el menú
                             }
                         )
                     }
@@ -153,16 +156,16 @@ fun RegistroTransaccionScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // Categoría Dropdown
+            // Menú desplegable para seleccionar la categoría
             ExposedDropdownMenuBox(
                 expanded = expandedCategoria,
                 onExpandedChange = { expandedCategoria = !expandedCategoria }) {
                 OutlinedTextField(
-                    value = categoriaSeleccionada?.nombre ?: "",
+                    value = categoriaSeleccionada?.nombre ?: "", // Muestra el nombre de la categoría seleccionada
                     onValueChange = {},
-                    readOnly = true,
+                    readOnly = true, // Campo de solo lectura
                     label = { Text("Categoría") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategoria) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategoria) }, // Icono del menú desplegable
                     modifier = Modifier.menuAnchor()
                 )
                 ExposedDropdownMenu(
@@ -170,10 +173,10 @@ fun RegistroTransaccionScreen(
                     onDismissRequest = { expandedCategoria = false }) {
                     categoriasFiltradas.forEach {
                         DropdownMenuItem(
-                            text = { Text(it.nombre) },
+                            text = { Text(it.nombre) }, // Muestra el nombre de cada categoría
                             onClick = {
-                                categoriaSeleccionada = it
-                                expandedCategoria = false
+                                categoriaSeleccionada = it // Actualiza la categoría seleccionada
+                                expandedCategoria = false // Cierra el menú
                             }
                         )
                     }
@@ -182,19 +185,21 @@ fun RegistroTransaccionScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // Descripción
+            // Campo para ingresar la descripción
             OutlinedTextField(
                 value = descripcion,
-                onValueChange = { descripcion = it },
+                onValueChange = { descripcion = it }, // Actualiza la descripción ingresada
                 label = { Text("Descripción") }
             )
 
             Spacer(Modifier.height(16.dp))
 
+            // Botón para guardar la transacción
             Button(
                 onClick = {
-                    val montoDouble = monto.toDoubleOrNull()
+                    val montoDouble = monto.toDoubleOrNull() // Convierte el monto a Double
                     if (montoDouble != null && cuentaSeleccionada != null && categoriaSeleccionada != null) {
+                        // Llama al callback con los datos de la transacción
                         onGuardarClick(
                             TransaccionEntity(
                                 id_usuario = idUsuario,
@@ -202,7 +207,7 @@ fun RegistroTransaccionScreen(
                                 id_cuenta = cuentaSeleccionada!!.id_cuenta,
                                 monto = montoDouble,
                                 fecha = fecha,
-                                descripcion = descripcion.takeIf { it.isNotBlank() },
+                                descripcion = descripcion.takeIf { it.isNotBlank() }, // Solo guarda la descripción si no está vacía
                                 tipo = tipo
                             )
                         )
@@ -210,7 +215,7 @@ fun RegistroTransaccionScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Guardar")
+                Text("Guardar") // Texto del botón
             }
         }
     }

@@ -57,17 +57,17 @@ import androidx.compose.material3.ButtonDefaults
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaTransaccionesScreen(
-    transacciones: List<TransaccionConDetalles>,
-    onAgregarClick: () -> Unit,
-    onVerEstadisticas: () -> Unit
+    transacciones: List<TransaccionConDetalles>, // Lista de transacciones con detalles relacionados
+    onAgregarClick: () -> Unit, // Acción al presionar el botón para agregar una nueva transacción
+    onVerEstadisticas: () -> Unit // Acción al presionar el botón para ver estadísticas
 ) {
     Scaffold(
-        containerColor = Color(0xFFFDF9FF),
+        containerColor = Color(0xFFFDF9FF), // Color de fondo de la pantalla
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Transacciones",
+                        text = "Transacciones", // Título de la pantalla
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                         modifier = Modifier
                             .fillMaxWidth().padding(top = 20.dp),
@@ -75,7 +75,7 @@ fun ListaTransaccionesScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { onVerEstadisticas() }) {
+                    IconButton(onClick = { onVerEstadisticas() }) { // Botón para navegar a la pantalla de estadísticas
                         Icon(Icons.Filled.PieChart, contentDescription = "Ver estadísticas")
                     }
                 }
@@ -83,39 +83,41 @@ fun ListaTransaccionesScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAgregarClick,
+                onClick = onAgregarClick, // Acción al presionar el botón flotante
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
-                Icon(Icons.Filled.AddCircle, contentDescription = "Agregar")
+                Icon(Icons.Filled.AddCircle, contentDescription = "Agregar") // Ícono del botón flotante
             }
         }
     ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
+                .padding(padding) // Respeta el padding del Scaffold
                 .fillMaxSize()
         ) {
-            var fechaSeleccionada by remember { mutableStateOf(LocalDate.now()) }
+            var fechaSeleccionada by remember { mutableStateOf(LocalDate.now()) } // Estado para la fecha seleccionada
 
             FiltroPorFecha(
-                fechaSeleccionada = fechaSeleccionada,
-                onFechaSeleccionada = { fechaSeleccionada = it }
+                fechaSeleccionada = fechaSeleccionada, // Componente para seleccionar la fecha
+                onFechaSeleccionada = { fechaSeleccionada = it } // Actualiza la fecha seleccionada
             )
 
+            // Filtra las transacciones según la fecha seleccionada
             val transaccionesFiltradas = transacciones.filter {
                 it.transaccion.fecha == fechaSeleccionada
             }
 
+            // Lista de transacciones filtradas
             LazyColumn(
                 modifier = Modifier
                     .padding(top = 12.dp)
                     .fillMaxSize()
             ) {
                 items(transaccionesFiltradas) { item ->
-                    TransaccionItem(item)
+                    TransaccionItem(item) // Componente que muestra cada transacción
                 }
             }
         }
@@ -125,46 +127,46 @@ fun ListaTransaccionesScreen(
 @Composable
 fun TransaccionItem(item: TransaccionConDetalles) {
     val trans = item.transaccion
-    val colorFondo = if (trans.tipo == "Ingreso") Color(0xFFDFF5E1) else Color(0xFFFFEAEA)
-    val colorTexto = if (trans.tipo == "Ingreso") Color(0xFF1B5E20) else Color(0xFFB71C1C)
+    val colorFondo = if (trans.tipo == "Ingreso") Color(0xFFDFF5E1) else Color(0xFFFFEAEA) // Color según el tipo
+    val colorTexto = if (trans.tipo == "Ingreso") Color(0xFF1B5E20) else Color(0xFFB71C1C) // Color del texto según el tipo
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = colorFondo),
-        elevation = CardDefaults.cardElevation(2.dp),
-        shape = RoundedCornerShape(12.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp), // Margen del Card
+        colors = CardDefaults.cardColors(containerColor = colorFondo), // Color de fondo del Card
+        elevation = CardDefaults.cardElevation(2.dp), // Elevación del Card
+        shape = RoundedCornerShape(12.dp) // Esquinas redondeadas
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
 
             // Primera fila: tipo y monto alineado a la derecha
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Badge(
-                    containerColor = if (trans.tipo == "Ingreso") Color(0xFF81C784) else Color(0xFFE57373),
+                    containerColor = if (trans.tipo == "Ingreso") Color(0xFF81C784) else Color(0xFFE57373), // Color del Badge
                     contentColor = Color.White
                 ) {
-                    Text(trans.tipo)
+                    Text(trans.tipo) // Muestra el tipo de transacción
                 }
                 Text(
-                    text = "S/ %.2f".format(trans.monto),
+                    text = "S/ %.2f".format(trans.monto), // Muestra el monto
                     style = MaterialTheme.typography.titleMedium.copy(color = colorTexto)
                 )
             }
 
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(6.dp)) // Espaciado entre filas
 
             // Segunda fila: Cuenta y Categoría con íconos
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.AccountBalanceWallet, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Cuenta: ${item.cuenta.nombre}", style = MaterialTheme.typography.bodyMedium)
+                Text("Cuenta: ${item.cuenta.nombre}", style = MaterialTheme.typography.bodyMedium) // Muestra la cuenta
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.Category, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Categoría: ${item.categoria.nombre}", style = MaterialTheme.typography.bodyMedium)
+                Text("Categoría: ${item.categoria.nombre}", style = MaterialTheme.typography.bodyMedium) // Muestra la categoría
             }
 
             // Nota (opcional)
@@ -172,14 +174,14 @@ fun TransaccionItem(item: TransaccionConDetalles) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.Notes, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Nota: $it", style = MaterialTheme.typography.bodySmall)
+                    Text("Nota: $it", style = MaterialTheme.typography.bodySmall) // Muestra la nota si existe
                 }
             }
 
             // Fecha alineada a la derecha
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
-                    text = item.transaccion.fecha.toString(),
+                    text = item.transaccion.fecha.toString(), // Muestra la fecha de la transacción
                     style = MaterialTheme.typography.labelSmall
                 )
             }
@@ -189,31 +191,31 @@ fun TransaccionItem(item: TransaccionConDetalles) {
 
 @Composable
 fun FiltroPorFecha(
-    fechaSeleccionada: LocalDate,
-    onFechaSeleccionada: (LocalDate) -> Unit
+    fechaSeleccionada: LocalDate, // Fecha actualmente seleccionada
+    onFechaSeleccionada: (LocalDate) -> Unit // Acción al seleccionar una nueva fecha
 ) {
     val context = LocalContext.current
     val year = fechaSeleccionada.year
     val month = fechaSeleccionada.monthValue - 1 // DatePicker usa 0-indexed
     val day = fechaSeleccionada.dayOfMonth
 
+    // Diálogo para seleccionar una fecha
     val datePickerDialog = remember {
         DatePickerDialog(context, { _, y, m, d ->
-            onFechaSeleccionada(LocalDate.of(y, m + 1, d))
+            onFechaSeleccionada(LocalDate.of(y, m + 1, d)) // Actualiza la fecha seleccionada
         }, year, month, day)
     }
 
     Button(
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor   = MaterialTheme.colorScheme.onPrimary
+            containerColor = MaterialTheme.colorScheme.primary, // Color del botón
+            contentColor = MaterialTheme.colorScheme.onPrimary // Color del texto del botón
         ),
-        onClick = { datePickerDialog.show() },
+        onClick = { datePickerDialog.show() }, // Muestra el diálogo al presionar el botón
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        Text("Filtrar por: $fechaSeleccionada")
+        Text("Filtrar por: $fechaSeleccionada") // Texto del botón con la fecha seleccionada
     }
 }
-

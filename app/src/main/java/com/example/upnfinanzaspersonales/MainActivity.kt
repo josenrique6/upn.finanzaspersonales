@@ -23,7 +23,6 @@ import com.example.upnfinanzaspersonales.data.local.database.AppDatabase
 import com.example.upnfinanzaspersonales.data.local.database.DatabaseInitializer
 import com.example.upnfinanzaspersonales.ui.theme.UpnfinanzaspersonalesTheme
 import com.example.upnfinanzaspersonales.presentation.ui.screens.*
-import com.example.upnfinanzaspersonales.domain.model.Transaccion
 import com.example.upnfinanzaspersonales.presentation.ui.viewmodel.TransaccionViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,94 +32,97 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge() // Habilita el diseño de borde a borde en la actividad.
 
-        //inicializar base de datos
+        // Inicializa la base de datos Room.
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
-            "app_finanzas_db"
+            "app_finanzas_db" // Nombre de la base de datos.
         ).build()
 
+        // Inserta datos por defecto en la base de datos.
         DatabaseInitializer.insertarDatosPorDefecto(
             db.cuentaDao(),
             db.categoriaDao(),
             db.usuarioDao(),
-            CoroutineScope(Dispatchers.IO)
+            CoroutineScope(Dispatchers.IO) // Ejecuta en un hilo de IO.
         )
 
         setContent {
             UpnfinanzaspersonalesTheme {
-                // A surface container using the 'background' color from the theme
+                // Configura el diseño principal de la aplicación.
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     content = { padding ->
-                        // Contenido de la aplicación
+                        // Contenedor principal de navegación.
                         AppFinanzasNavHost(db)
                     }
                 )
             }
-
         }
     }
 }
 
 @Composable
 fun AppFinanzasNavHost(db: AppDatabase) {
-    val navController = rememberNavController()
+    val navController = rememberNavController() // Controlador de navegación.
 
-    // Inicializar ViewModel (de forma manual aquí)
+    // Inicializa el ViewModel manualmente.
     val viewModel = TransaccionViewModel(
         cuentaDao = db.cuentaDao(),
         categoriaDao = db.categoriaDao(),
         transaccionDao = db.transaccionDao()
     )
 
+    // Configura las rutas de navegación.
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "login" // Pantalla inicial.
     ) {
+        // Pantalla de inicio de sesión.
         composable("login") {
-
             LoginScreen(onLoginSuccess = {
-                navController.navigate("lista")
-            }
-
-            )
+                navController.navigate("lista") // Navega a la lista de transacciones al iniciar sesión.
+            })
         }
+
+        // Pantalla de lista de transacciones.
         composable("lista") {
-            val transacciones by viewModel.transacciones.collectAsState()
+            val transacciones by viewModel.transacciones.collectAsState() // Observa las transacciones.
             ListaTransaccionesScreen(
                 transacciones = transacciones,
                 onAgregarClick = {
-                    navController.navigate("registro")
+                    navController.navigate("registro") // Navega a la pantalla de registro.
                 },
                 onVerEstadisticas = {
-                    navController.navigate("estadisticas")
+                    navController.navigate("estadisticas") // Navega a la pantalla de estadísticas.
                 }
             )
         }
 
+        // Pantalla de registro de transacciones.
         composable("registro") {
-            val cuentas by viewModel.cuentas.collectAsState()
-            val categorias by viewModel.categorias.collectAsState()
+            val cuentas by viewModel.cuentas.collectAsState() // Observa las cuentas.
+            val categorias by viewModel.categorias.collectAsState() // Observa las categorías.
 
             RegistroTransaccionScreen(
                 cuentas = cuentas,
                 categorias = categorias,
                 onGuardarClick = { nuevaTransaccion ->
-                    viewModel.registrar(nuevaTransaccion)
-                    navController.popBackStack()
+                    viewModel.registrar(nuevaTransaccion) // Registra la nueva transacción.
+                    navController.popBackStack() // Vuelve a la pantalla anterior.
                 }
             )
         }
 
+        // Pantalla de estadísticas.
         composable("estadisticas") {
-            val transacciones by viewModel.transacciones.collectAsState()
+            val transacciones by viewModel.transacciones.collectAsState() // Observa las transacciones.
 
             EstadisticasScreen(
                 transacciones = transacciones,
-                initialFecha = LocalDate.now()
+                initialFecha = LocalDate.now() // Fecha inicial para las estadísticas.
             )
         }
     }
@@ -128,6 +130,7 @@ fun AppFinanzasNavHost(db: AppDatabase) {
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
+    // Componente simple que muestra un saludo.
     Text(
         text = "Hello $name!",
         modifier = modifier
@@ -137,6 +140,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
+    // Vista previa del componente Greeting.
     UpnfinanzaspersonalesTheme {
         Greeting("Android")
     }

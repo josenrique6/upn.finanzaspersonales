@@ -51,71 +51,73 @@ import kotlin.collections.forEach
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit = {}) { // Callback para cuando el login es exitoso
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val context = LocalContext.current // Para mostrar Toasts
+    var username by remember { mutableStateOf("") } // Estado para almacenar el nombre de usuario o email
+    var password by remember { mutableStateOf("") } // Estado para almacenar la contraseña
+    val context = LocalContext.current // Contexto para mostrar mensajes Toast
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .fillMaxSize() // Ocupa todo el tamaño disponible
+            .padding(16.dp), // Margen interno de 16dp
+        horizontalAlignment = Alignment.CenterHorizontally, // Alineación horizontal centrada
+        verticalArrangement = Arrangement.Center // Alineación vertical centrada
     ) {
+        // Título de la pantalla
         Text(
             text = "Iniciar Sesión",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 24.dp)
+            style = MaterialTheme.typography.headlineMedium, // Estilo del texto
+            modifier = Modifier.padding(bottom = 24.dp) // Espaciado inferior
         )
 
+        // Campo de texto para el nombre de usuario o email
         OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("Usuario o Email") },
-            singleLine = true,
-            leadingIcon = { Icon(Icons.Filled.Person, contentDescription = "Icono de usuario") },
-            modifier = Modifier.fillMaxWidth()
+            value = username, // Valor actual del campo
+            onValueChange = { username = it }, // Actualiza el estado al cambiar el texto
+            label = { Text("Usuario o Email") }, // Etiqueta del campo
+            singleLine = true, // Limita el campo a una sola línea
+            leadingIcon = { Icon(Icons.Filled.Person, contentDescription = "Icono de usuario") }, // Icono al inicio
+            modifier = Modifier.fillMaxWidth() // Ocupa todo el ancho disponible
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp)) // Espaciado entre elementos
 
+        // Campo de texto para la contraseña
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Contraseña") },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Icono de candado") },
-            modifier = Modifier.fillMaxWidth()
+            value = password, // Valor actual del campo
+            onValueChange = { password = it }, // Actualiza el estado al cambiar el texto
+            label = { Text("Contraseña") }, // Etiqueta del campo
+            singleLine = true, // Limita el campo a una sola línea
+            visualTransformation = PasswordVisualTransformation(), // Oculta el texto ingresado
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), // Configuración del teclado
+            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Icono de candado") }, // Icono al inicio
+            modifier = Modifier.fillMaxWidth() // Ocupa todo el ancho disponible
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp)) // Espaciado entre elementos
 
         Button(
             onClick = {
-                // Lógica de autenticación simple (reemplazar con tu lógica real)
-                if (username.isNotBlank() && password.isNotBlank()) {
-                    Log.d("LoginScreen", "Usuario: $username, Contraseña: $password")
-                    // Aquí iría tu lógica de validación contra un backend, base de datos, etc.
-                    // Por ahora, simulamos un login exitoso si los campos no están vacíos.
-                    Toast.makeText(context, "Login Exitoso (Simulado)", Toast.LENGTH_SHORT).show()
-                    onLoginSuccess() // Llama al callback
+                // Lógica de autenticación simple
+                if (username.isNotBlank() && password.isNotBlank()) { // Verifica que los campos no estén vacíos
+                    Log.d("LoginScreen", "Usuario: $username, Contraseña: $password") // Registra los datos en el log
+                    Toast.makeText(context, "Login Exitoso (Simulado)", Toast.LENGTH_SHORT).show() // Muestra un mensaje de éxito
+                    onLoginSuccess() // Llama al callback de éxito
                 } else {
-                    Toast.makeText(context, "Por favor, ingresa usuario y contraseña", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Por favor, ingresa usuario y contraseña", Toast.LENGTH_SHORT).show() // Muestra un mensaje de error
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth() // Ocupa todo el ancho disponible
         ) {
-            Text("Entrar")
+            Text("Entrar") // Texto del botón
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp)) // Espaciado entre elementos
 
+        // Botón de texto para la funcionalidad de "Olvidé mi contraseña"
         TextButton(onClick = {
-            Toast.makeText(context, "Funcionalidad 'Olvidé contraseña' no implementada", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Funcionalidad 'Olvidé contraseña' no implementada", Toast.LENGTH_SHORT).show() // Muestra un mensaje indicando que no está implementado
         }) {
-            Text("¿Olvidaste tu contraseña?")
+            Text("¿Olvidaste tu contraseña?") // Texto del botón
         }
     }
 }
@@ -123,7 +125,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}) { // Callback para cuando el lo
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    MaterialTheme { // Asegúrate de tener un tema definido en tu app (Theme.kt)
-        LoginScreen()
+    MaterialTheme { // Aplica el tema de la aplicación
+        LoginScreen() // Vista previa de la pantalla de inicio de sesión
     }
 }
